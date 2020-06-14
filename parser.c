@@ -1,8 +1,17 @@
+#include "params.h"
+
 // Goal: set settings in a struct from command line arguments
 
-// "Rules": There are x types of parameters: Bools, strings and ints
+// "Rules": There are 3 types of parameters: Bools, strings and ints
 
+int		main(int argc, char *argv)
+{
 // read each argument
+	int i;
+
+	i = 0;
+	while (++i < argc)
+		 parse_arg(params, argv[i]);
 // if the argument starts with only one '-'
 //		interpret each coming character except space as a parameter to be set
 //			if character not a parameter => throw an error
