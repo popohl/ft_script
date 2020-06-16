@@ -27,4 +27,4 @@ int		main(int argc, char *argv)
 // if the argument starts with two '--'
 //		interpret the whole coming word as a parameter,
 //		using the same rules as with a single '-'
-
+}
