@@ -9,7 +9,7 @@ SRC_DIR		= srcs
 INC_DIR		= inc
 
 CC			= clang
-CFLAGS		= -Wall -Wextra -Werror -Ofast -g3
+CFLAGS		= -Wall -Wextra -g3
 
 OBJS		:= $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS))
 OBJS_BONUS	:= $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRCS_BONUS))

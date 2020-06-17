@@ -3,7 +3,7 @@
 
 typedef struct	s_params {
 	char	bool_param;
-	char	*str_param;
+	int		str_param;
 }				t_params;
 
 #endif
