@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <signal.h>
 #include <sys/ioctl.h>
 #include <stdlib.h>
 
@@ -24,12 +25,20 @@ int		init_pty(int fdm)
 	return (fds);
 }
 
+pid_t	pid;
+
+void	ctrl_c_handler(int signum)
+{
+	kill(pid, SIGINT);
+}
+
 int		main(int argc, char **argv, char **envp)
 {
 	int		fdm;
 	int		fds;
 	int		n;
 	char	*buffer;
+	char	reader[100];
 
 	if ((fdm = open("/dev/ptmx", O_RDWR)) < 0)
 		return (1);
@@ -40,18 +49,23 @@ int		main(int argc, char **argv, char **envp)
 	int tmpfd = open("typescript", O_CREAT | O_RDWR | O_TRUNC);
 	// if ((fds = init_pty(fdm) < 0))
 		// return (1);
-	if ((n = fork()) > 0)
+	if ((pid = fork()) > 0)
 	{
 		// master
 		close(fds);
+		struct sigaction ctrl_c_action;
+		ctrl_c_action.sa_handler = ctrl_c_handler;
+		sigaction(SIGINT, &ctrl_c_action, NULL);
 		while (1)
 		{
-			read(fdm, buffer, 1);
-			write(1, buffer, 1);
-			write(tmpfd, buffer, 1);
+			if (waitpid(pid, &n, WNOHANG))
+				break ;
+			n = read(fdm, reader, 15);
+			write(1, reader, n);
+			write(tmpfd, reader, n);
 		}
 	}
-	else if (n == 0)
+	else if (pid == 0)
 	{
 		// slave
 		close(fdm);
