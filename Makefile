@@ -1,6 +1,6 @@
 NAME		= ft_script
 
-SRCS		= main.c
+SRCS		= main.c utils.c
 SRCS_BONUS	=
 LIBS		= libft
 
