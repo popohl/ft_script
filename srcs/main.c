@@ -100,11 +100,11 @@ int			main(int argc, char **argv) //, char **envp)
 	ft_bzero(&cfg, sizeof(cfg));
 	cfg.filename.str = "typescript";
 	cfg.filename.len = 10;
-	parse_args(argc, argv, &cfg);
+	if ((n = parse_args(argc, argv, &cfg)))
+		return (n);
 	if (!cfg.flush_file && cfg.cmd < argc)
 		cfg.filename = (t_str){argv[cfg.cmd], ft_strlen(argv[cfg.cmd++])};
-	printf(">> %s\n", argv[cfg.cmd]);
-	print_params(cfg);
+	// print_params(cfg);
 	cfg.fd = open(cfg.filename.str, O_WRONLY | O_CREAT |
 			(cfg.append ? O_APPEND : O_TRUNC), 0644);
 	if (cfg.fd == -1)

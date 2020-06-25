@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
-#include <sys/stat.h>
+#include <stdlib.h>
 
 int			error(int err_code)
 {
@@ -15,35 +15,50 @@ int		init_pty(int fdm)
 {
 	int			fds;
 	char		slavename[128];
-	struct stat	sbuf;
 
 	if (ioctl(fdm, TIOCPTYGRANT) || ioctl(fdm, TIOCPTYUNLK))
 		return (-1);
-	if (ioctl(fdm, TIOCPTYGNAME, slavename) || stat(slavename, &sbuf))
+	if (ioctl(fdm, TIOCPTYGNAME, slavename))
 		return (-1);
 	fds = open(slavename, O_RDWR);
 	return (fds);
 }
 
-int		main(void)
+int		main(int argc, char **argv, char **envp)
 {
 	int		fdm;
 	int		fds;
 	int		n;
-	char	buffer[150];
+	char	*buffer;
 
 	if ((fdm = open("/dev/ptmx", O_RDWR)) < 0)
 		return (1);
-	if ((fds = init_pty(fdm) < 0))
-		return (1);
-	if ((n = fork()))
+	grantpt(fdm);
+	unlockpt(fdm);
+	buffer = ptsname(fdm);
+	fds = open(buffer, O_RDWR);
+	int tmpfd = open("typescript", O_CREAT | O_RDWR | O_TRUNC);
+	// if ((fds = init_pty(fdm) < 0))
+		// return (1);
+	if ((n = fork()) > 0)
 	{
-		close(fdm);
-	}
-	else if (n != -1)
-	{
+		// master
 		close(fds);
+		while (1)
+		{
+			read(fdm, buffer, 1);
+			write(1, buffer, 1);
+			write(tmpfd, buffer, 1);
+		}
+	}
+	else if (n == 0)
+	{
+		// slave
+		close(fdm);
+		dup2(fds, 1);
+		dup2(fds, 2);
+		execve("/bin/bash", argv, envp);
 	}
 	else
-		return (error(123));
+		return (error(404));
 }
