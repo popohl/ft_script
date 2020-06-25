@@ -31,24 +31,26 @@ void	print_params(t_params cfg)
 	printf("cfg.quiet: %d\n", cfg.quiet);
 	printf("cfg.record: %d\n", cfg.record);
 	printf("cfg.flush_file: %d\n", cfg.flush_file);
-	printf("cfg.filename: %s, len: %d\n", cfg.filename.str, cfg.filename.len);
+	printf("cfg.filename: %s, len: %zu\n", cfg.filename.str, cfg.filename.len);
 	printf("cfg.cmd: %d\n", cfg.cmd);
 }
 
-void	set_str_param(t_params *cfg, char **argv, int i)
+void	set_str_param(t_params *cfg, int argc, char **argv, int i)
 {
+	cfg->flush_file = 1;
 	if (argv[cfg->cmd][++i] != 0)
 		cfg->filename = (t_str){argv[cfg->cmd] + i,
-				ft_strlen(argv[cfg->cmd] + i)};
-	else
+			ft_strlen(argv[cfg->cmd] + i)};
+	else if (cfg->cmd + 1 < argc)
 	{
 		cfg->cmd++;
 		cfg->filename = (t_str){argv[cfg->cmd], ft_strlen(argv[cfg->cmd])};
 	}
-	cfg->flush_file = 1;
+	else
+		cfg->flush_file = 0;
 }
 
-int		set_param(char **argv, t_params *cfg)
+int		set_param(int argc, char **argv, t_params *cfg)
 {
 	int		i;
 
@@ -66,7 +68,7 @@ int		set_param(char **argv, t_params *cfg)
 		else if (argv[cfg->cmd][i] == 'r')
 			cfg->record = 1;
 		else if (argv[cfg->cmd][i] == 'F')
-			set_str_param(cfg, argv, i);
+			set_str_param(cfg, argc, argv, i);
 		else
 			return (error(2));
 	}
@@ -81,7 +83,7 @@ int		parse_args(int argc, char **argv, t_params *cfg)
 	{
 		if (argv[cfg->cmd][0] == '-' && argv[cfg->cmd][1])
 		{
-			if ((n = set_param(argv, cfg)))
+			if ((n = set_param(argc, argv, cfg)))
 				return (n);
 		}
 		else
@@ -104,7 +106,7 @@ int			main(int argc, char **argv) //, char **envp)
 	printf(">> %s\n", argv[cfg.cmd]);
 	print_params(cfg);
 	cfg.fd = open(cfg.filename.str, O_WRONLY | O_CREAT |
-				(cfg.append ? O_APPEND : O_TRUNC), 0644);
+			(cfg.append ? O_APPEND : O_TRUNC), 0644);
 	if (cfg.fd == -1)
 		error(1);
 	if (!cfg.quiet)
